@@ -106,6 +106,27 @@ const i18nText = {
     register_button: "Register",
     register_have_account: "Already have an account?",
     go_login: "Login here",
+
+    // ---- New: districts, auth messages, misc ----
+    district_taoyuan: "Taoyuan", district_zhongli: "Zhongli", district_pingzhen: "Pingzhen",
+    district_bade: "Bade", district_yangmei: "Yangmei", district_luzhu: "Luzhu",
+    district_dayuan: "Dayuan", district_guishan: "Guishan", district_daxi: "Daxi",
+    district_guanyin: "Guanyin", district_xinwu: "Xinwu", district_longtan: "Longtan",
+    district_fuxing: "Fuxing",
+    select_placeholder: "-- Please select --",
+    password_hint: "At least 6 characters",
+    logout: "Logout",
+    greeting: "Hi, {name}",
+    err_email_taken: "This email is already registered. Please log in instead.",
+    err_password_short: "Password must be at least 6 characters.",
+    err_login_failed: "Incorrect email or password.",
+    ok_registered: "Welcome to Taoyuan Sharing Community, {name}! Redirecting…",
+    ok_logged_in: "Welcome back, {name}! Redirecting…",
+    demo_notice: "Demo mode: accounts are saved only in this browser.",
+    close: "Close",
+    prev: "Previous",
+    next: "Next",
+    footer_text: "© Taoyuan Sharing Community — Share, Save, Smile.",
   },
 
   zh: {
@@ -211,32 +232,78 @@ const i18nText = {
     register_button: "註冊",
     register_have_account: "已經有帳號了嗎？",
     go_login: "前往登入",
+
+    district_taoyuan: "桃園區", district_zhongli: "中壢區", district_pingzhen: "平鎮區",
+    district_bade: "八德區", district_yangmei: "楊梅區", district_luzhu: "蘆竹區",
+    district_dayuan: "大園區", district_guishan: "龜山區", district_daxi: "大溪區",
+    district_guanyin: "觀音區", district_xinwu: "新屋區", district_longtan: "龍潭區",
+    district_fuxing: "復興區",
+    select_placeholder: "-- 請選擇 --",
+    password_hint: "至少 6 個字元",
+    logout: "登出",
+    greeting: "嗨，{name}",
+    err_email_taken: "此電子郵件已註冊，請直接登入。",
+    err_password_short: "密碼至少需要 6 個字元。",
+    err_login_failed: "電子郵件或密碼錯誤。",
+    ok_registered: "歡迎加入桃園共享社區，{name}！正在跳轉…",
+    ok_logged_in: "歡迎回來，{name}！正在跳轉…",
+    demo_notice: "示範模式：帳號只會儲存在這個瀏覽器中。",
+    close: "關閉",
+    prev: "上一個",
+    next: "下一個",
+    footer_text: "© 桃園共享社區 — 分享、省錢、微笑。",
   },
 };
 
 // 取得目前語言
 function getCurrentLang() {
-  return localStorage.getItem("lang") || "en";
+  try {
+    const lang = localStorage.getItem("lang");
+    return lang && i18nText[lang] ? lang : "en";
+  } catch (e) {
+    return "en";
+  }
+}
+
+// 取得翻譯文字（支援 {name} 這類變數）
+function t(key, vars = {}, lang = getCurrentLang()) {
+  const dict = i18nText[lang] || i18nText.en;
+  let text = dict[key] ?? i18nText.en[key] ?? key;
+  for (const [k, v] of Object.entries(vars)) text = text.replace(`{${k}}`, v);
+  return text;
 }
 
 // ===============================
 // 🌏 套用語言到所有 data-i18n
 // ===============================
 function applyLanguage(lang) {
-  const dict = i18nText[lang] || i18nText.en;
+  if (!i18nText[lang]) lang = "en";
+  const dict = i18nText[lang];
 
   document.documentElement.lang = lang === "zh" ? "zh-Hant" : "en";
 
-  // 更新所有 data-i18n 元素
+  // 更新所有 data-i18n 元素（包含 <title>）
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.dataset.i18n;
-    if (dict[key]) {
-      el.textContent = dict[key];
-    }
+    if (dict[key]) el.textContent = dict[key];
   });
 
-  // 儲存使用者語言偏好
-  localStorage.setItem("lang", lang);
+  // 更新 aria-label
+  document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
+    const key = el.dataset.i18nAria;
+    if (dict[key]) el.setAttribute("aria-label", dict[key]);
+  });
+
+  // 標示目前語言按鈕
+  document.querySelectorAll("[data-lang]").forEach((btn) => {
+    const active = btn.dataset.lang === lang;
+    btn.classList.toggle("active", active);
+    btn.setAttribute("aria-pressed", String(active));
+  });
+
+  try {
+    localStorage.setItem("lang", lang);
+  } catch (e) {}
 
   // 通知其他 JS（例如 index.js）語言已變更
   document.dispatchEvent(new CustomEvent("languageChange", { detail: { lang } }));
@@ -246,18 +313,8 @@ function applyLanguage(lang) {
 // 🌏 初始化語言 + 綁定按鈕
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
-  const savedLang = getCurrentLang();
-  applyLanguage(savedLang);
-
   document.querySelectorAll("[data-lang]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      applyLanguage(btn.dataset.lang);
-    });
+    btn.addEventListener("click", () => applyLanguage(btn.dataset.lang));
   });
-
-  // 同步 <title>
-  const titleKey = "site_title";
-  if (i18nText[savedLang][titleKey]) {
-    document.title = i18nText[savedLang][titleKey];
-  }
+  applyLanguage(getCurrentLang());
 });

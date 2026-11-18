@@ -1,70 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title data-i18n="register_page_title">Register - Taoyuan Sharing</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="stylesheet" href="style.css">
+  <meta name="description" content="Create an account on Taoyuan Sharing Community." />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
   <!-- Navbar -->
-  <div id="navbar">
-    <a href="index.html" data-i18n="home">Home</a>
+  <header id="navbar">
+    <a href="index.html" class="brand">🌱 <span data-i18n="site_title">Taoyuan Sharing Community</span></a>
 
-    <div id="navbar-right" style="display:flex; gap:15px; align-items:center;">
-      <a href="login.html" class="nav-btn" data-i18n="login">Login</a>
-      <a href="register.html" class="nav-btn" data-i18n="register">Register</a>
-
-      <div id="language-switcher">
-        <button data-lang="en">EN</button>
-        <button data-lang="zh">中文</button>
+    <nav id="navbar-right">
+      <a href="index.html" class="nav-link" data-i18n="home">Home</a>
+      <div id="nav-auth">
+        <a href="login.html" class="nav-btn nav-btn-ghost" data-i18n="login">Login</a>
+        <a href="register.html" class="nav-btn" aria-current="page" data-i18n="register">Register</a>
       </div>
-    </div>
-  </div>
 
-  <div class="auth-container">
+      <div id="language-switcher" role="group" aria-label="Language">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="zh">中文</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="auth-container">
     <h1 data-i18n="register_heading">Create an Account</h1>
 
     <form id="register-form" class="auth-form">
       <label for="reg-name" data-i18n="reg_name_label">Your Name</label>
-      <input type="text" id="reg-name" required>
+      <input type="text" id="reg-name" required autocomplete="name" />
+
+      <label for="reg-email" data-i18n="reg_email_label">Email</label>
+      <input type="email" id="reg-email" required autocomplete="email" />
 
       <label for="reg-password" data-i18n="reg_password_label">Password</label>
-      <input type="password" id="reg-password" required autocomplete="new-password">
+      <input type="password" id="reg-password" required minlength="6"
+             autocomplete="new-password" aria-describedby="pw-hint" />
+      <small id="pw-hint" class="field-hint" data-i18n="password_hint">At least 6 characters</small>
 
       <label for="reg-area" data-i18n="reg_area_label">Select Your Area</label>
       <select id="reg-area" required>
-        <option value="">--</option>
-        <option>Taoyuan City Center</option>
-        <option>Pingzhen</option>
-        <option>Zhongli</option>
-        <option>Bade</option>
-        <option>Yangmei</option>
-        <option>Guishan</option>
+        <option value="" data-i18n="select_placeholder">-- Please select --</option>
+        <option value="Taoyuan" data-i18n="district_taoyuan">Taoyuan</option>
+        <option value="Zhongli" data-i18n="district_zhongli">Zhongli</option>
+        <option value="Pingzhen" data-i18n="district_pingzhen">Pingzhen</option>
+        <option value="Bade" data-i18n="district_bade">Bade</option>
+        <option value="Yangmei" data-i18n="district_yangmei">Yangmei</option>
+        <option value="Luzhu" data-i18n="district_luzhu">Luzhu</option>
+        <option value="Dayuan" data-i18n="district_dayuan">Dayuan</option>
+        <option value="Guishan" data-i18n="district_guishan">Guishan</option>
+        <option value="Daxi" data-i18n="district_daxi">Daxi</option>
+        <option value="Guanyin" data-i18n="district_guanyin">Guanyin</option>
+        <option value="Xinwu" data-i18n="district_xinwu">Xinwu</option>
+        <option value="Longtan" data-i18n="district_longtan">Longtan</option>
+        <option value="Fuxing" data-i18n="district_fuxing">Fuxing</option>
       </select>
 
-      <label for="reg-email" data-i18n="reg_email_label">Email</label>
-      <input type="email" id="reg-email" required autocomplete="email">
-
       <label for="reg-phone" data-i18n="reg_phone_label">Phone Number</label>
-      <input type="tel" id="reg-phone" required>
+      <input type="tel" id="reg-phone" required autocomplete="tel"
+             inputmode="tel" pattern="[0-9+\-\s()]{8,}" placeholder="09xx-xxx-xxx" />
 
-      <button type="submit" class="auth-btn" data-i18n="register_button">
-        Register
-      </button>
+      <p id="form-message" class="form-message" role="status" aria-live="polite"></p>
+
+      <button type="submit" class="auth-btn" data-i18n="register_button">Register</button>
     </form>
+
+    <p class="demo-notice" data-i18n="demo_notice">Demo mode: accounts are saved only in this browser.</p>
 
     <p>
       <span data-i18n="register_have_account">Already have an account?</span>
       <a href="login.html" data-i18n="go_login">Login here</a>
     </p>
-    <p>
-      <a href="index.html" data-i18n="back_home">← Back to Home</a>
-    </p>
-  </div>
+    <p><a href="index.html" data-i18n="back_home">← Back to Home</a></p>
+  </main>
 
   <script src="i18n.js"></script>
+  <script src="auth.js"></script>
   <script src="register.js"></script>
 </body>
 </html>
