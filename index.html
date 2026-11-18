@@ -3,121 +3,360 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title data-i18n="site_title">Taoyuan Sharing Community</title>
-  <meta name="description" content="Share, Save, Smile — free food, clothes, books and useful items around Taoyuan." />
+  <title data-i18n="page_title_home">Taoyuan Sharing Community — Free items shared by neighbours</title>
+  <meta name="description" content="Free food, clothes, books and household items shared by neighbours across Taoyuan's 13 districts." />
+  <meta name="theme-color" content="#e8711f" />
+  <meta property="og:title" content="Taoyuan Sharing Community" />
+  <meta property="og:description" content="Give what you don't need. Find what you do. Free items shared by neighbours in Taoyuan." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
+  <!-- Icon sprite -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></symbol>
+    <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-post" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+    <symbol id="i-hand" viewBox="0 0 24 24"><path d="M3 14h4l5 3 6-2 3-3-2-1-5 2-3-1 3-2-2-1-5 3H3z"/><path d="M12 3c-1.5 0-2.5 1-2.5 2.3 0 2 2.5 3.7 2.5 3.7s2.5-1.7 2.5-3.7C14.5 4 13.5 3 12 3z"/></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M9 19c-4 1.3-4-2-6-2.5M15 21v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.7 4.7 0 0 0-1.3-3.2 4.4 4.4 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.4 4.4 0 0 0-.1 3.2A4.7 4.7 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></symbol>
+  </svg>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
   <!-- Navbar -->
   <header id="navbar">
-    <a href="index.html" class="brand">🌱 <span data-i18n="site_title">Taoyuan Sharing Community</span></a>
+    <div class="nav-inner">
+      <a href="index.html" class="brand">
+        <span class="brand-mark" aria-hidden="true">🌱</span>
+        <span data-i18n="site_title">Taoyuan Sharing Community</span>
+      </a>
 
-    <nav id="navbar-right">
-      <a href="index.html" class="nav-link" aria-current="page" data-i18n="home">Home</a>
-      <div id="nav-auth">
-        <a href="login.html" class="nav-btn nav-btn-ghost" data-i18n="login">Login</a>
-        <a href="register.html" class="nav-btn" data-i18n="register">Register</a>
-      </div>
+      <button type="button" id="nav-toggle" class="icon-btn" aria-expanded="false" aria-controls="nav-menu"
+              data-i18n-aria="menu" aria-label="Menu">
+        <svg class="icon"><use href="#i-menu"/></svg>
+      </button>
 
-      <div id="language-switcher" role="group" aria-label="Language">
-        <button type="button" data-lang="en">EN</button>
-        <button type="button" data-lang="zh">中文</button>
-      </div>
-    </nav>
+      <nav id="nav-menu">
+        <ul class="nav-links">
+          <li><a href="#items" class="nav-link" data-i18n="nav_items">Items</a></li>
+          <li><a href="#how" class="nav-link" data-i18n="nav_how">How it works</a></li>
+          <li><a href="#events" class="nav-link" data-i18n="nav_events">Events</a></li>
+          <li><a href="#about" class="nav-link" data-i18n="nav_about">About</a></li>
+        </ul>
+        <div class="nav-actions">
+          <div id="nav-auth">
+            <a href="login.html" class="btn btn-ghost btn-sm" data-i18n="login">Log in</a>
+            <a href="register.html" class="btn btn-primary btn-sm" data-i18n="register">Sign up</a>
+          </div>
+          <div id="language-switcher" role="group" aria-label="Language">
+            <button type="button" data-lang="en">EN</button>
+            <button type="button" data-lang="zh">中文</button>
+          </div>
+        </div>
+      </nav>
+    </div>
   </header>
 
-  <!-- Welcome Section -->
-  <section id="welcome-section">
-    <div class="welcome-content">
-      <h1 id="main-title" data-i18n="welcome_title">Welcome to Taoyuan Sharing Community</h1>
-      <hr class="welcome-divider" />
-      <p id="main-mission" data-i18n="welcome_mission">
-        Share, Save, Smile — Free Food, Clothes, Books &amp; Useful Items Around You!
-      </p>
-      <a href="register.html" class="hero-cta" data-i18n="register">Register</a>
-    </div>
-  </section>
+  <main id="main">
+    <!-- Hero -->
+    <section id="hero">
+      <div class="hero-inner">
+        <p class="eyebrow" data-i18n="hero_eyebrow">Taoyuan's community sharing platform</p>
+        <h1 data-i18n="welcome_title">Give what you don't need. Find what you do.</h1>
+        <p class="hero-sub" data-i18n="welcome_mission">
+          Free food, clothes, books and household items shared by neighbours across Taoyuan's 13 districts.
+        </p>
 
-  <!-- Main Section -->
-  <main class="container">
-    <!-- Left Column -->
-    <div class="left-column">
-      <section aria-labelledby="upcomingBar">
-        <h2 class="orange-bar" id="upcomingBar" data-i18n="upcoming_events">Upcoming Events</h2>
-        <div class="highlight-slider-wrapper">
-          <div id="events-slider" class="highlight-slider"></div>
-        </div>
-      </section>
+        <form id="hero-search" class="hero-search" role="search">
+          <label class="visually-hidden" for="hero-q" data-i18n="filter_search_label">Search items</label>
+          <div class="hero-search-field">
+            <svg class="icon"><use href="#i-search"/></svg>
+            <input type="search" id="hero-q" data-i18n-placeholder="search_placeholder"
+                   placeholder="Search items, e.g. jacket, rice cooker" />
+          </div>
+          <label class="visually-hidden" for="hero-district" data-i18n="filter_district_label">District</label>
+          <select id="hero-district" class="district-select"></select>
+          <button type="submit" class="btn btn-primary" data-i18n="search_btn">Search</button>
+        </form>
 
-      <section aria-labelledby="hotItemsBar">
-        <h2 class="orange-bar" id="hotItemsBar" data-i18n="hot_items">Hot Items List</h2>
-        <ul id="new-items-list" class="items-list"></ul>
-      </section>
-    </div>
+        <ul class="hero-stats">
+          <li><strong id="stat-items">0</strong><span data-i18n="stat_items">Items available</span></li>
+          <li><strong>13</strong><span data-i18n="stat_districts">Districts covered</span></li>
+          <li><strong id="stat-events">0</strong><span data-i18n="stat_events">Upcoming events</span></li>
+          <li><strong id="stat-categories">0</strong><span data-i18n="stat_categories">Categories</span></li>
+        </ul>
+      </div>
+    </section>
 
-    <!-- Right Column -->
-    <aside class="right-column">
-      <!-- Donor Board -->
-      <div class="donor-board">
-        <h2 class="donor-title" data-i18n="donor_board">Donor Board</h2>
-        <ol class="donor-list">
-          <li><span class="heart" aria-hidden="true">🥇</span><span data-i18n="donor_lin">Mr. Lin — 25 donations</span></li>
-          <li><span class="heart" aria-hidden="true">🥈</span><span data-i18n="donor_chen">Ms. Chen — 18 donations</span></li>
-          <li><span class="heart" aria-hidden="true">🥉</span><span data-i18n="donor_wang">Mr. Wang — 15 donations</span></li>
-          <li><span class="heart" aria-hidden="true">❤️</span><span data-i18n="donor_lee">Ms. Lee — 12 donations</span></li>
-          <li><span class="heart" aria-hidden="true">❤️</span><span data-i18n="donor_tanaka">Mr. Tanaka — 9 donations</span></li>
+    <!-- How it works -->
+    <section id="how" class="section">
+      <div class="section-inner">
+        <header class="section-head center">
+          <h2 data-i18n="how_title">How it works</h2>
+          <p data-i18n="how_sub">Sharing takes less than a minute — and it's always free.</p>
+        </header>
+        <ol class="steps">
+          <li class="step">
+            <span class="step-icon"><svg class="icon"><use href="#i-post"/></svg></span>
+            <span class="step-num">01</span>
+            <h3 data-i18n="how1_title">Post your item</h3>
+            <p data-i18n="how1_text">Describe it, choose a category and set a pickup spot near you.</p>
+          </li>
+          <li class="step">
+            <span class="step-icon"><svg class="icon"><use href="#i-chat"/></svg></span>
+            <span class="step-num">02</span>
+            <h3 data-i18n="how2_title">Get a request</h3>
+            <p data-i18n="how2_text">Neighbours who need it send a request. You decide who receives it.</p>
+          </li>
+          <li class="step">
+            <span class="step-icon"><svg class="icon"><use href="#i-hand"/></svg></span>
+            <span class="step-num">03</span>
+            <h3 data-i18n="how3_title">Meet and share</h3>
+            <p data-i18n="how3_text">Hand it over at a public pickup spot. No fees, no selling — just sharing.</p>
+          </li>
         </ol>
-        <p class="donor-footer" data-i18n="donor_footer">We appreciate every kindness 💕</p>
       </div>
+    </section>
 
-      <!-- About / QA Board -->
-      <div class="qa-board">
-        <h2>🌿 <span data-i18n="about_title">About Taoyuan Sharing</span></h2>
-        <p data-i18n="about_content">
-          Taoyuan Sharing Old Stuffs is a local community built to encourage people to give new life
-          to old items. Instead of throwing things away, we connect donors with those who truly need
-          them — creating a cycle of kindness across Taoyuan.
-        </p>
+    <!-- Items -->
+    <section id="items" class="section section-alt">
+      <div class="section-inner">
+        <header class="section-head split">
+          <div>
+            <h2 data-i18n="items_title">Available items</h2>
+            <p data-i18n="items_sub">Everything here is free. Request an item and the donor will contact you.</p>
+          </div>
+          <button type="button" class="btn btn-primary share-open">
+            <svg class="icon"><use href="#i-plus"/></svg>
+            <span data-i18n="cta_share">Share an item</span>
+          </button>
+        </header>
 
-        <h3>🌸 <span data-i18n="mission_title">Our Mission</span></h3>
-        <p data-i18n="mission_content">
-          To build a sustainable and caring society where sharing replaces waste, and every unused
-          item finds a new home filled with gratitude.
-        </p>
+        <div class="toolbar">
+          <div class="toolbar-search">
+            <svg class="icon"><use href="#i-search"/></svg>
+            <label class="visually-hidden" for="filter-q" data-i18n="filter_search_label">Search items</label>
+            <input type="search" id="filter-q" data-i18n-placeholder="search_placeholder"
+                   placeholder="Search items, e.g. jacket, rice cooker" />
+          </div>
+          <label class="visually-hidden" for="filter-district" data-i18n="filter_district_label">District</label>
+          <select id="filter-district" class="district-select"></select>
+          <label class="visually-hidden" for="filter-sort" data-i18n="filter_sort_label">Sort</label>
+          <select id="filter-sort">
+            <option value="newest" data-i18n="sort_newest">Newest first</option>
+            <option value="oldest" data-i18n="sort_oldest">Oldest first</option>
+            <option value="name" data-i18n="sort_name">Name (A–Z)</option>
+          </select>
+        </div>
 
-        <h3>💬 <span data-i18n="qa_title">Q&amp;A</span></h3>
-        <details>
-          <summary data-i18n="qa1_q">Who can join the community?</summary>
-          <p data-i18n="qa1_a">Anyone living in Taoyuan who wants to share or receive old items.</p>
-        </details>
-        <details>
-          <summary data-i18n="qa2_q">How do I donate?</summary>
-          <p data-i18n="qa2_a">Simply register and list your available items. We’ll match you with someone in need.</p>
-        </details>
+        <div id="category-chips" class="chips" role="group" aria-label="Category"></div>
+
+        <p id="results-count" class="results-count" aria-live="polite"></p>
+        <ul id="items-grid" class="items-grid"></ul>
+
+        <div id="empty-state" class="empty-state" hidden>
+          <span aria-hidden="true">🔍</span>
+          <p data-i18n="no_results">No items match your search.</p>
+          <button type="button" id="clear-filters" class="btn btn-ghost" data-i18n="clear_filters">Clear filters</button>
+        </div>
       </div>
-    </aside>
+    </section>
+
+    <!-- Events -->
+    <section id="events" class="section">
+      <div class="section-inner">
+        <header class="section-head">
+          <h2 data-i18n="events_title">Upcoming events</h2>
+          <p data-i18n="events_sub">Join a sharing day near you. All events are free and open to everyone.</p>
+        </header>
+        <ul id="events-grid" class="events-grid"></ul>
+        <p id="no-events" class="empty-state" hidden data-i18n="no_events">No upcoming events right now.</p>
+      </div>
+    </section>
+
+    <!-- Community: top sharers + about + FAQ -->
+    <section id="about" class="section section-alt">
+      <div class="section-inner community">
+        <div class="card about-card">
+          <h2 data-i18n="about_title">About Taoyuan Sharing</h2>
+          <p data-i18n="about_content">Taoyuan Sharing Community is a local, non-profit platform.</p>
+          <h3 data-i18n="mission_title">Our mission</h3>
+          <p data-i18n="mission_content">To build a sustainable and caring city where sharing replaces waste.</p>
+
+          <h3 data-i18n="faq_title">Frequently asked questions</h3>
+          <div class="faq">
+            <details><summary data-i18n="qa1_q">Who can join the community?</summary><p data-i18n="qa1_a"></p></details>
+            <details><summary data-i18n="qa2_q">How do I donate an item?</summary><p data-i18n="qa2_a"></p></details>
+            <details><summary data-i18n="qa3_q">Is everything really free?</summary><p data-i18n="qa3_a"></p></details>
+            <details><summary data-i18n="qa4_q">What can't I share?</summary><p data-i18n="qa4_a"></p></details>
+            <details><summary data-i18n="qa5_q">How do I stay safe when meeting?</summary><p data-i18n="qa5_a"></p></details>
+          </div>
+        </div>
+
+        <aside class="card donor-card">
+          <h2 data-i18n="donor_board">Top sharers</h2>
+          <p class="muted" data-i18n="donor_sub">Neighbours who shared the most this year</p>
+          <ol id="donor-list" class="donor-list"></ol>
+          <p class="donor-footer" data-i18n="donor_footer">Thank you for every act of kindness 💕</p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Call to action -->
+    <section class="cta-band">
+      <div class="section-inner cta-inner">
+        <div>
+          <h2 data-i18n="cta_title">Have something you no longer need?</h2>
+          <p data-i18n="cta_text">Give it a second life — someone in Taoyuan is looking for it.</p>
+        </div>
+        <button type="button" class="btn btn-light share-open">
+          <svg class="icon"><use href="#i-plus"/></svg>
+          <span data-i18n="cta_share">Share an item</span>
+        </button>
+      </div>
+    </section>
   </main>
 
+  <!-- Footer -->
   <footer class="site-footer">
-    <p data-i18n="footer_text">© Taoyuan Sharing Community — Share, Save, Smile.</p>
+    <div class="section-inner footer-grid">
+      <div>
+        <a href="index.html" class="brand brand-footer">
+          <span class="brand-mark" aria-hidden="true">🌱</span>
+          <span data-i18n="site_title">Taoyuan Sharing Community</span>
+        </a>
+        <p data-i18n="footer_about">A non-profit community platform connecting neighbours in Taoyuan to share instead of waste.</p>
+      </div>
+      <div>
+        <h3 data-i18n="footer_explore">Explore</h3>
+        <ul>
+          <li><a href="#items" data-i18n="nav_items">Items</a></li>
+          <li><a href="#how" data-i18n="nav_how">How it works</a></li>
+          <li><a href="#events" data-i18n="nav_events">Events</a></li>
+          <li><a href="#about" data-i18n="nav_about">About</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 data-i18n="footer_account">Account</h3>
+        <ul>
+          <li><a href="login.html" data-i18n="login">Log in</a></li>
+          <li><a href="register.html" data-i18n="register">Sign up</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 data-i18n="footer_contact">Contact</h3>
+        <ul>
+          <li>
+            <a href="https://github.com/kylie-tran/TaoYuan-Sharing-Community/issues" target="_blank" rel="noopener">
+              <svg class="icon icon-sm"><use href="#i-github"/></svg>
+              <span data-i18n="footer_feedback">Send feedback on GitHub</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="section-inner footer-bottom">
+      <span data-i18n="footer_rights">© 2026 Taoyuan Sharing Community.</span>
+      <span data-i18n="footer_demo">Demo version: accounts and listings are saved only in your browser.</span>
+    </div>
   </footer>
 
-  <!-- Item detail modal -->
-  <div id="item-modal" hidden>
-    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-name">
-      <button type="button" id="modal-close" data-i18n-aria="close" aria-label="Close">✕</button>
-      <img id="modal-img" src="" alt="" />
-      <h2 id="modal-name"></h2>
-      <p id="modal-area"></p>
-      <p id="modal-description"></p>
-      <p id="modal-donor"></p>
-      <p id="modal-pickup"></p>
+  <!-- Item detail dialog -->
+  <dialog id="item-dialog" class="dialog" aria-labelledby="item-title">
+    <button type="button" class="icon-btn dialog-close" data-i18n-aria="close" aria-label="Close">
+      <svg class="icon"><use href="#i-x"/></svg>
+    </button>
+    <div id="item-media" class="dialog-media"></div>
+    <div class="dialog-body">
+      <div id="item-badges" class="badges"></div>
+      <h2 id="item-title"></h2>
+      <p id="item-desc"></p>
+      <dl class="detail-list">
+        <div><dt data-i18n="detail_condition">Condition</dt><dd id="item-condition"></dd></div>
+        <div><dt data-i18n="detail_district">District</dt><dd id="item-district"></dd></div>
+        <div><dt data-i18n="detail_pickup">Pickup location</dt><dd id="item-pickup"></dd></div>
+        <div><dt data-i18n="detail_donor">Shared by</dt><dd id="item-donor"></dd></div>
+        <div><dt data-i18n="detail_posted">Posted</dt><dd id="item-posted"></dd></div>
+      </dl>
+      <p id="item-message" class="form-message" role="status" aria-live="polite"></p>
+      <div id="item-actions" class="dialog-actions"></div>
     </div>
-  </div>
+  </dialog>
 
-  <!-- Language + Function Scripts -->
+  <!-- Share item dialog -->
+  <dialog id="share-dialog" class="dialog dialog-form" aria-labelledby="share-title">
+    <button type="button" class="icon-btn dialog-close" data-i18n-aria="close" aria-label="Close">
+      <svg class="icon"><use href="#i-x"/></svg>
+    </button>
+    <div class="dialog-body">
+      <h2 id="share-title" data-i18n="share_title">Share an item</h2>
+
+      <div id="share-login" hidden>
+        <p data-i18n="share_login_needed">Please log in or sign up to share an item.</p>
+        <div class="dialog-actions">
+          <a href="login.html" class="btn btn-ghost" data-i18n="login">Log in</a>
+          <a href="register.html" class="btn btn-primary" data-i18n="register">Sign up</a>
+        </div>
+      </div>
+
+      <form id="share-form" class="form" hidden>
+        <p class="muted" data-i18n="share_intro">Listings are free. Please only share items that are clean and safe to use.</p>
+
+        <label for="share-name" data-i18n="share_name">Item name</label>
+        <input id="share-name" required maxlength="80" data-i18n-placeholder="share_name_ph" />
+
+        <div class="form-row">
+          <div>
+            <label for="share-category" data-i18n="share_category">Category</label>
+            <select id="share-category" required></select>
+          </div>
+          <div>
+            <label for="share-condition" data-i18n="share_condition">Condition</label>
+            <select id="share-condition" required>
+              <option value="new" data-i18n="cond_new">New</option>
+              <option value="like_new" data-i18n="cond_like_new">Like new</option>
+              <option value="good" data-i18n="cond_good" selected>Good</option>
+            </select>
+          </div>
+        </div>
+        <p id="share-food-note" class="field-hint" data-i18n="share_food_note" hidden>Food must be unopened.</p>
+
+        <label for="share-district" data-i18n="share_district">District</label>
+        <select id="share-district" required></select>
+
+        <label for="share-desc" data-i18n="share_desc">Description</label>
+        <textarea id="share-desc" rows="3" maxlength="500" required data-i18n-placeholder="share_desc_ph"></textarea>
+
+        <label for="share-pickup" data-i18n="share_pickup">Pickup location</label>
+        <input id="share-pickup" required maxlength="100" data-i18n-placeholder="share_pickup_ph" />
+
+        <label for="share-image" data-i18n="share_image">Photo URL (optional)</label>
+        <input id="share-image" type="url" placeholder="https://" />
+
+        <div class="dialog-actions">
+          <button type="button" class="btn btn-ghost dialog-cancel" data-i18n="share_cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" data-i18n="share_submit">Publish item</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
   <script src="i18n.js"></script>
+  <script src="data.js"></script>
   <script src="auth.js"></script>
   <script src="index.js"></script>
 </body>

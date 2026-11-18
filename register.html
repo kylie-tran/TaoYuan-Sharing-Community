@@ -3,78 +3,133 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title data-i18n="register_page_title">Register - Taoyuan Sharing</title>
+  <title data-i18n="register_page_title">Sign up — Taoyuan Sharing Community</title>
   <meta name="description" content="Create an account on Taoyuan Sharing Community." />
+  <meta name="theme-color" content="#e8711f" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body class="auth-page">
+  <!-- Icon sprite -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></symbol>
+    <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-post" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+    <symbol id="i-hand" viewBox="0 0 24 24"><path d="M3 14h4l5 3 6-2 3-3-2-1-5 2-3-1 3-2-2-1-5 3H3z"/><path d="M12 3c-1.5 0-2.5 1-2.5 2.3 0 2 2.5 3.7 2.5 3.7s2.5-1.7 2.5-3.7C14.5 4 13.5 3 12 3z"/></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M9 19c-4 1.3-4-2-6-2.5M15 21v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.7 4.7 0 0 0-1.3-3.2 4.4 4.4 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.4 4.4 0 0 0-.1 3.2A4.7 4.7 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></symbol>
+  </svg>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
   <!-- Navbar -->
   <header id="navbar">
-    <a href="index.html" class="brand">🌱 <span data-i18n="site_title">Taoyuan Sharing Community</span></a>
+    <div class="nav-inner">
+      <a href="index.html" class="brand">
+        <span class="brand-mark" aria-hidden="true">🌱</span>
+        <span data-i18n="site_title">Taoyuan Sharing Community</span>
+      </a>
 
-    <nav id="navbar-right">
-      <a href="index.html" class="nav-link" data-i18n="home">Home</a>
-      <div id="nav-auth">
-        <a href="login.html" class="nav-btn nav-btn-ghost" data-i18n="login">Login</a>
-        <a href="register.html" class="nav-btn" aria-current="page" data-i18n="register">Register</a>
-      </div>
+      <button type="button" id="nav-toggle" class="icon-btn" aria-expanded="false" aria-controls="nav-menu"
+              data-i18n-aria="menu" aria-label="Menu">
+        <svg class="icon"><use href="#i-menu"/></svg>
+      </button>
 
-      <div id="language-switcher" role="group" aria-label="Language">
-        <button type="button" data-lang="en">EN</button>
-        <button type="button" data-lang="zh">中文</button>
-      </div>
-    </nav>
+      <nav id="nav-menu">
+        <ul class="nav-links">
+          <li><a href="index.html#items" class="nav-link" data-i18n="nav_items">Items</a></li>
+          <li><a href="index.html#how" class="nav-link" data-i18n="nav_how">How it works</a></li>
+          <li><a href="index.html#events" class="nav-link" data-i18n="nav_events">Events</a></li>
+          <li><a href="index.html#about" class="nav-link" data-i18n="nav_about">About</a></li>
+        </ul>
+        <div class="nav-actions">
+          <div id="nav-auth">
+            <a href="login.html" class="btn btn-ghost btn-sm" data-i18n="login">Log in</a>
+            <a href="register.html" class="btn btn-primary btn-sm" data-i18n="register">Sign up</a>
+          </div>
+          <div id="language-switcher" role="group" aria-label="Language">
+            <button type="button" data-lang="en">EN</button>
+            <button type="button" data-lang="zh">中文</button>
+          </div>
+        </div>
+      </nav>
+    </div>
   </header>
 
-  <main class="auth-container">
-    <h1 data-i18n="register_heading">Create an Account</h1>
+  <main id="main" class="auth-main">
+    <div class="auth-shell">
+      <aside class="auth-aside">
+        <span class="brand-mark big" aria-hidden="true">🌱</span>
+        <h2 data-i18n="welcome_title">Give what you don't need. Find what you do.</h2>
+        <ul class="auth-points">
+          <li><svg class="icon"><use href="#i-post"/></svg><span data-i18n="how1_title">Post your item</span></li>
+          <li><svg class="icon"><use href="#i-chat"/></svg><span data-i18n="how2_title">Get a request</span></li>
+          <li><svg class="icon"><use href="#i-hand"/></svg><span data-i18n="how3_title">Meet and share</span></li>
+        </ul>
+      </aside>
+      <div class="auth-container">
+        <h1 data-i18n="register_heading">Create your account</h1>
+        <p class="muted" data-i18n="register_sub">Join neighbours across Taoyuan who share instead of waste.</p>
 
-    <form id="register-form" class="auth-form">
-      <label for="reg-name" data-i18n="reg_name_label">Your Name</label>
-      <input type="text" id="reg-name" required autocomplete="name" />
+        <form id="register-form" class="form">
+          <label for="reg-name" data-i18n="reg_name_label">Your name</label>
+          <input type="text" id="reg-name" required autocomplete="name" maxlength="40" />
 
-      <label for="reg-email" data-i18n="reg_email_label">Email</label>
-      <input type="email" id="reg-email" required autocomplete="email" />
+          <label for="reg-email" data-i18n="reg_email_label">Email</label>
+          <input type="email" id="reg-email" required autocomplete="email" />
 
-      <label for="reg-password" data-i18n="reg_password_label">Password</label>
-      <input type="password" id="reg-password" required minlength="6"
-             autocomplete="new-password" aria-describedby="pw-hint" />
-      <small id="pw-hint" class="field-hint" data-i18n="password_hint">At least 6 characters</small>
+          <label for="reg-password" data-i18n="reg_password_label">Password</label>
+          <input type="password" id="reg-password" required minlength="6"
+                 autocomplete="new-password" aria-describedby="pw-hint" />
+          <small id="pw-hint" class="field-hint" data-i18n="password_hint">At least 6 characters</small>
 
-      <label for="reg-area" data-i18n="reg_area_label">Select Your Area</label>
-      <select id="reg-area" required>
-        <option value="" data-i18n="select_placeholder">-- Please select --</option>
-        <option value="Taoyuan" data-i18n="district_taoyuan">Taoyuan</option>
-        <option value="Zhongli" data-i18n="district_zhongli">Zhongli</option>
-        <option value="Pingzhen" data-i18n="district_pingzhen">Pingzhen</option>
-        <option value="Bade" data-i18n="district_bade">Bade</option>
-        <option value="Yangmei" data-i18n="district_yangmei">Yangmei</option>
-        <option value="Luzhu" data-i18n="district_luzhu">Luzhu</option>
-        <option value="Dayuan" data-i18n="district_dayuan">Dayuan</option>
-        <option value="Guishan" data-i18n="district_guishan">Guishan</option>
-        <option value="Daxi" data-i18n="district_daxi">Daxi</option>
-        <option value="Guanyin" data-i18n="district_guanyin">Guanyin</option>
-        <option value="Xinwu" data-i18n="district_xinwu">Xinwu</option>
-        <option value="Longtan" data-i18n="district_longtan">Longtan</option>
-        <option value="Fuxing" data-i18n="district_fuxing">Fuxing</option>
-      </select>
+          <div class="form-row">
+            <div>
+              <label for="reg-area" data-i18n="reg_area_label">Your district</label>
+              <select id="reg-area" required>
+                <option value="" data-i18n="select_placeholder">-- Please select --</option>
+            <option value="Taoyuan" data-i18n="district_taoyuan">Taoyuan</option>
+            <option value="Zhongli" data-i18n="district_zhongli">Zhongli</option>
+            <option value="Pingzhen" data-i18n="district_pingzhen">Pingzhen</option>
+            <option value="Bade" data-i18n="district_bade">Bade</option>
+            <option value="Yangmei" data-i18n="district_yangmei">Yangmei</option>
+            <option value="Luzhu" data-i18n="district_luzhu">Luzhu</option>
+            <option value="Dayuan" data-i18n="district_dayuan">Dayuan</option>
+            <option value="Guishan" data-i18n="district_guishan">Guishan</option>
+            <option value="Daxi" data-i18n="district_daxi">Daxi</option>
+            <option value="Guanyin" data-i18n="district_guanyin">Guanyin</option>
+            <option value="Xinwu" data-i18n="district_xinwu">Xinwu</option>
+            <option value="Longtan" data-i18n="district_longtan">Longtan</option>
+            <option value="Fuxing" data-i18n="district_fuxing">Fuxing</option>
+              </select>
+            </div>
+            <div>
+              <label for="reg-phone" data-i18n="reg_phone_label">Phone number</label>
+              <input type="tel" id="reg-phone" required autocomplete="tel"
+                     inputmode="tel" pattern="[0-9+\-\s\(\)]{8,}" placeholder="09xx-xxx-xxx" />
+            </div>
+          </div>
 
-      <label for="reg-phone" data-i18n="reg_phone_label">Phone Number</label>
-      <input type="tel" id="reg-phone" required autocomplete="tel"
-             inputmode="tel" pattern="[0-9+\-\s()]{8,}" placeholder="09xx-xxx-xxx" />
+          <p id="form-message" class="form-message" role="status" aria-live="polite"></p>
+          <button type="submit" class="btn btn-primary btn-block" data-i18n="register_button">Create account</button>
+        </form>
 
-      <p id="form-message" class="form-message" role="status" aria-live="polite"></p>
-
-      <button type="submit" class="auth-btn" data-i18n="register_button">Register</button>
-    </form>
-
-    <p class="demo-notice" data-i18n="demo_notice">Demo mode: accounts are saved only in this browser.</p>
-
-    <p>
-      <span data-i18n="register_have_account">Already have an account?</span>
-      <a href="login.html" data-i18n="go_login">Login here</a>
-    </p>
-    <p><a href="index.html" data-i18n="back_home">← Back to Home</a></p>
+        <p class="auth-switch">
+          <span data-i18n="register_have_account">Already have an account?</span>
+          <a href="login.html" data-i18n="go_login">Log in</a>
+        </p>
+        <p class="demo-notice" data-i18n="demo_notice">Demo mode: accounts are saved only in this browser.</p>
+      </div>
+    </div>
   </main>
 
   <script src="i18n.js"></script>

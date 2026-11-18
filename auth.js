@@ -79,7 +79,7 @@ const Auth = (() => {
     hi.className = "nav-greeting";
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "nav-btn";
+    btn.className = "btn btn-ghost btn-sm";
     btn.addEventListener("click", () => {
       logout();
       window.location.href = "index.html";
@@ -94,7 +94,28 @@ const Auth = (() => {
     document.addEventListener("languageChange", update);
   }
 
-  document.addEventListener("DOMContentLoaded", renderNavbar);
+  // Mobile menu toggle
+  function setupMenu() {
+    const toggle = document.getElementById("nav-toggle");
+    const menu = document.getElementById("nav-menu");
+    if (!toggle || !menu) return;
+    const setOpen = (open) => {
+      menu.classList.toggle("open", open);
+      toggle.setAttribute("aria-expanded", String(open));
+    };
+    toggle.addEventListener("click", () => setOpen(!menu.classList.contains("open")));
+    menu.addEventListener("click", (e) => {
+      if (e.target.closest("a")) setOpen(false);
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") setOpen(false);
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    renderNavbar();
+    setupMenu();
+  });
 
   return { register, login, logout, currentUser };
 })();
