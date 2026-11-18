@@ -1,241 +1,408 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // ====== Helpers ======
+  const $ = (sel) => document.querySelector(sel);
   const lang = () => (typeof getCurrentLang === "function" ? getCurrentLang() : "en");
-  const dictFor = (l) => i18nText[l] || i18nText.en;
-  // Smaller, compressed Unsplash images load much faster than the originals
-  const sized = (url, w) => `${url}w=${w}&auto=format&fit=crop&q=70`;
+  const loc = (v, l = lang()) => (v == null ? "" : typeof v === "string" ? v : v[l] || v.en || "");
+  const esc = (s) =>
+    String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  const icon = (id, cls = "icon") => `<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
+  const catOf = (id) => CATEGORIES.find((c) => c.id === id) || CATEGORIES[CATEGORIES.length - 1];
 
-  // Show a soft placeholder if an image fails to load
-  function withFallback(img, emoji) {
-    img.addEventListener("error", () => {
-      img.replaceWith(Object.assign(document.createElement("div"), {
-        className: "img-fallback",
-        textContent: emoji,
-      }));
-    }, { once: true });
-    return img;
+  function load(key, fallback) {
+    try {
+      return JSON.parse(localStorage.getItem(key)) ?? fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+  function save(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {}
   }
 
-  // ====== Upcoming Events Slider ======
-  const eventsSlider = document.getElementById("events-slider");
+  const todayISO = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+  const daysSince = (iso) => Math.max(0, Math.round((new Date(todayISO()) - new Date(iso)) / 86400000));
+  function postedLabel(iso) {
+    const n = daysSince(iso);
+    if (n === 0) return t("posted_today");
+    if (n === 1) return t("posted_yesterday");
+    return t("posted_days", { n });
+  }
+  const safeUrl = (u) => (/^https?:\/\//i.test(u || "") ? u : "");
 
-  const eventsData = [
-    { key: "event1", emoji: "🍱", img: "https://plus.unsplash.com/premium_photo-1754341357839-a11120163778?" },
-    { key: "event2", emoji: "📚", img: "https://images.unsplash.com/photo-1591171550305-7faf12e39a27?" },
-    { key: "event3", emoji: "👕", img: "https://plus.unsplash.com/premium_photo-1676587710768-3c36f6aa9fdd?" },
-    { key: "event4", emoji: "🧸", img: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?" },
-  ];
+  let toastTimer;
+  function toast(text) {
+    const el = $("#toast");
+    el.textContent = text;
+    el.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => (el.hidden = true), 3500);
+  }
 
-  function buildEvents() {
-    if (!eventsSlider) return;
-    eventsSlider.innerHTML = "";
+  // ====== Data ======
+  const USER_ITEMS = "ts_items";
+  const REQUESTS = "ts_requests";
+  const userItems = () => load(USER_ITEMS, []);
+  const allItems = () => [...userItems(), ...SEED_ITEMS];
 
-    // Two copies so auto-scroll can loop seamlessly; the copy is hidden from screen readers
-    [...eventsData, ...eventsData].forEach((e, i) => {
-      const card = document.createElement("article");
-      card.className = "item";
-      card.dataset.eventKey = e.key;
-      if (i >= eventsData.length) card.setAttribute("aria-hidden", "true");
+  const state = { q: "", cat: "all", district: "", sort: "newest" };
 
-      const img = withFallback(Object.assign(document.createElement("img"), {
-        src: sized(e.img, 600), alt: "", loading: "lazy",
-      }), e.emoji);
+  // ====== Selects (districts, categories) ======
+  function fillDistrictSelect(sel, firstKey) {
+    const current = sel.value;
+    sel.innerHTML =
+      `<option value="">${esc(t(firstKey))}</option>` +
+      DISTRICTS.map((d) => `<option value="${d}">${esc(t("district_" + d))}</option>`).join("");
+    sel.value = current;
+  }
 
-      card.innerHTML = `
-        <span class="badge" data-i18n-event-badge></span>
-        <div class="text-below">
-          <h3 data-i18n-event-title></h3>
-          <p data-i18n-event-info></p>
-        </div>`;
-      card.prepend(img);
-      eventsSlider.appendChild(card);
+  function fillCategorySelect(sel) {
+    const current = sel.value;
+    sel.innerHTML =
+      `<option value="">${esc(t("select_placeholder"))}</option>` +
+      CATEGORIES.map((c) => `<option value="${c.id}">${c.icon} ${esc(t("cat_" + c.id))}</option>`).join("");
+    sel.value = current;
+  }
+
+  function renderSelects() {
+    fillDistrictSelect($("#hero-district"), "all_districts");
+    fillDistrictSelect($("#filter-district"), "all_districts");
+    fillDistrictSelect($("#share-district"), "select_placeholder");
+    fillCategorySelect($("#share-category"));
+  }
+
+  // ====== Category chips ======
+  function renderChips() {
+    const items = allItems();
+    const chips = [{ id: "all", icon: "" }, ...CATEGORIES];
+    $("#category-chips").innerHTML = chips
+      .map((c) => {
+        const count = c.id === "all" ? items.length : items.filter((i) => i.cat === c.id).length;
+        const active = state.cat === c.id;
+        return `<button type="button" class="chip${active ? " active" : ""}" data-cat="${c.id}" aria-pressed="${active}">
+          ${c.icon ? `<span aria-hidden="true">${c.icon}</span>` : ""}${esc(t("cat_" + c.id))}
+          <span class="chip-count">${count}</span></button>`;
+      })
+      .join("");
+  }
+
+  $("#category-chips").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-cat]");
+    if (!btn) return;
+    state.cat = btn.dataset.cat;
+    renderChips();
+    renderItems();
+  });
+
+  // ====== Items grid ======
+  function mediaHTML(item, cls) {
+    const cat = catOf(item.cat);
+    const src = safeUrl(item.img);
+    const tile = `<div class="media-tile ${cls}" style="--tile:${cat.color}"><span aria-hidden="true">${cat.icon}</span></div>`;
+    return src ? `<img class="${cls}" src="${esc(src)}" alt="" loading="lazy" data-fallback="${esc(tile)}" />` : tile;
+  }
+
+  function matches(item) {
+    if (state.cat !== "all" && item.cat !== state.cat) return false;
+    if (state.district && item.district !== state.district) return false;
+    if (state.q) {
+      const q = state.q.toLowerCase();
+      const hay = ["en", "zh"]
+        .map((l) => [loc(item.name, l), loc(item.desc, l), loc(item.pickup, l), t("district_" + item.district, {}, l), t("cat_" + item.cat, {}, l)].join(" "))
+        .join(" ")
+        .toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  }
+
+  function sorted(items) {
+    const l = lang();
+    const copy = [...items];
+    if (state.sort === "name") copy.sort((a, b) => loc(a.name, l).localeCompare(loc(b.name, l), l === "zh" ? "zh-Hant" : "en"));
+    else if (state.sort === "oldest") copy.sort((a, b) => a.posted.localeCompare(b.posted));
+    else copy.sort((a, b) => b.posted.localeCompare(a.posted));
+    return copy;
+  }
+
+  function renderItems() {
+    const user = Auth.currentUser();
+    const items = sorted(allItems().filter(matches));
+    $("#results-count").textContent = t(items.length === 1 ? "results_count_one" : "results_count", { n: items.length });
+    $("#empty-state").hidden = items.length > 0;
+
+    $("#items-grid").innerHTML = items
+      .map((item) => {
+        const cat = catOf(item.cat);
+        const mine = user && item.ownerEmail === user.email;
+        return `<li>
+          <button type="button" class="item-card" data-id="${esc(item.id)}">
+            <div class="item-media">
+              ${mediaHTML(item, "item-img")}
+              <span class="badge badge-cat">${cat.icon} ${esc(t("cat_" + item.cat))}</span>
+              ${mine ? `<span class="badge badge-mine">${esc(t("your_listing"))}</span>` : ""}
+            </div>
+            <div class="item-body">
+              <h3>${esc(loc(item.name))}</h3>
+              <p class="item-meta">${icon("i-pin", "icon icon-sm")}${esc(t("district_" + item.district))}</p>
+              <div class="item-footer">
+                <span class="badge badge-cond cond-${esc(item.condition)}">${esc(t("cond_" + item.condition))}</span>
+                <span class="item-time">${esc(postedLabel(item.posted))}</span>
+              </div>
+            </div>
+          </button>
+        </li>`;
+      })
+      .join("");
+  }
+
+  // Replace broken images with the category tile
+  document.addEventListener(
+    "error",
+    (e) => {
+      const img = e.target;
+      if (img.tagName === "IMG" && img.dataset.fallback) img.outerHTML = img.dataset.fallback;
+    },
+    true
+  );
+
+  $("#items-grid").addEventListener("click", (e) => {
+    const card = e.target.closest(".item-card");
+    if (card) openItem(card.dataset.id);
+  });
+
+  // ====== Filters ======
+  const filterQ = $("#filter-q");
+  filterQ.addEventListener("input", () => {
+    state.q = filterQ.value.trim();
+    renderItems();
+  });
+  $("#filter-district").addEventListener("change", (e) => {
+    state.district = e.target.value;
+    renderItems();
+  });
+  $("#filter-sort").addEventListener("change", (e) => {
+    state.sort = e.target.value;
+    renderItems();
+  });
+  $("#clear-filters").addEventListener("click", () => {
+    Object.assign(state, { q: "", cat: "all", district: "" });
+    filterQ.value = "";
+    $("#filter-district").value = "";
+    renderChips();
+    renderItems();
+  });
+
+  $("#hero-search").addEventListener("submit", (e) => {
+    e.preventDefault();
+    state.q = $("#hero-q").value.trim();
+    state.district = $("#hero-district").value;
+    filterQ.value = state.q;
+    $("#filter-district").value = state.district;
+    renderItems();
+    $("#items").scrollIntoView({ behavior: "smooth" });
+  });
+
+  // ====== Item dialog ======
+  const itemDialog = $("#item-dialog");
+  let openId = null;
+
+  function fillItemDialog() {
+    const item = allItems().find((i) => i.id === openId);
+    if (!item) return itemDialog.close();
+    const cat = catOf(item.cat);
+    const user = Auth.currentUser();
+    const requested = user && (load(REQUESTS, {})[user.email] || []).includes(item.id);
+    const mine = user && item.ownerEmail === user.email;
+
+    $("#item-media").innerHTML = mediaHTML(item, "dialog-img");
+    $("#item-badges").innerHTML = `<span class="badge badge-cat">${cat.icon} ${esc(t("cat_" + item.cat))}</span>`;
+    $("#item-title").textContent = loc(item.name);
+    $("#item-desc").textContent = loc(item.desc);
+    $("#item-condition").textContent = t("cond_" + item.condition);
+    $("#item-district").textContent = t("district_" + item.district);
+    $("#item-pickup").textContent = loc(item.pickup);
+    $("#item-donor").textContent = loc(item.donor);
+    $("#item-posted").textContent = new Date(item.posted).toLocaleDateString(lang() === "zh" ? "zh-TW" : "en-GB", {
+      year: "numeric", month: "long", day: "numeric",
     });
+
+    const actions = $("#item-actions");
+    if (!user) {
+      actions.innerHTML = `<a class="btn btn-primary" href="login.html">${esc(t("request_login"))}</a>`;
+    } else if (mine) {
+      actions.innerHTML = `<span class="muted">${esc(t("own_item"))}</span>
+        <button type="button" class="btn btn-danger" id="delete-item">${esc(t("delete_item"))}</button>`;
+    } else if (requested) {
+      actions.innerHTML = `<button type="button" class="btn btn-primary" disabled>${esc(t("request_already"))}</button>`;
+    } else {
+      actions.innerHTML = `<button type="button" class="btn btn-primary" id="request-item">${esc(t("request_btn"))}</button>`;
+    }
   }
 
-  function updateEventsLang(l) {
-    if (!eventsSlider) return;
-    const dict = dictFor(l);
-    eventsSlider.querySelectorAll(".item").forEach((card) => {
-      const key = card.dataset.eventKey;
-      card.querySelector("[data-i18n-event-title]").textContent = dict[`${key}_title`] || "";
-      card.querySelector("[data-i18n-event-info]").textContent = dict[`${key}_info`] || "";
-      card.querySelector("[data-i18n-event-badge]").textContent = dict.event_badge || "";
-    });
+  function openItem(id) {
+    openId = id;
+    $("#item-message").textContent = "";
+    $("#item-message").className = "form-message";
+    fillItemDialog();
+    itemDialog.showModal();
   }
 
-  // Auto-scroll: pauses on hover/focus, stops for users who prefer reduced motion
-  let scrollPos = 0;
-  let paused = false;
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  $("#item-actions").addEventListener("click", (e) => {
+    const user = Auth.currentUser();
+    if (!user) return;
+    if (e.target.id === "request-item") {
+      const all = load(REQUESTS, {});
+      all[user.email] = [...(all[user.email] || []), openId];
+      save(REQUESTS, all);
+      const item = allItems().find((i) => i.id === openId);
+      fillItemDialog();
+      const msg = $("#item-message");
+      msg.className = "form-message success";
+      msg.textContent = t("request_sent", { donor: loc(item.donor) });
+    }
+    if (e.target.id === "delete-item") {
+      save(USER_ITEMS, userItems().filter((i) => !(i.id === openId && i.ownerEmail === user.email)));
+      itemDialog.close();
+      refreshAll();
+    }
+  });
 
-  function loopWidth() {
-    return eventsSlider.scrollWidth / 2;
+  // ====== Share dialog ======
+  const shareDialog = $("#share-dialog");
+  const shareForm = $("#share-form");
+
+  function openShare() {
+    const user = Auth.currentUser();
+    $("#share-login").hidden = !!user;
+    shareForm.hidden = !user;
+    if (user && !$("#share-district").value && user.area) {
+      $("#share-district").value = String(user.area).toLowerCase();
+    }
+    shareDialog.showModal();
   }
 
-  function startAutoScroll() {
-    if (!eventsSlider || reduceMotion) return;
-    ["mouseenter", "focusin", "touchstart"].forEach((ev) =>
-      eventsSlider.addEventListener(ev, () => (paused = true), { passive: true }));
-    ["mouseleave", "focusout"].forEach((ev) =>
-      eventsSlider.addEventListener(ev, () => {
-        paused = false;
-        scrollPos = eventsSlider.scrollLeft;
-      }));
-    eventsSlider.addEventListener("touchend", () => {
-      setTimeout(() => {
-        paused = false;
-        scrollPos = eventsSlider.scrollLeft;
-      }, 2000);
-    });
+  document.querySelectorAll(".share-open").forEach((b) => b.addEventListener("click", openShare));
 
-    (function step() {
-      if (!paused && !document.hidden) {
-        scrollPos += 0.6;
-        if (scrollPos >= loopWidth()) scrollPos -= loopWidth();
-        eventsSlider.scrollLeft = scrollPos;
-      }
-      requestAnimationFrame(step);
-    })();
-  }
+  $("#share-category").addEventListener("change", (e) => {
+    $("#share-food-note").hidden = e.target.value !== "food";
+  });
 
-  function addEventSliderButtons() {
-    const wrapper = eventsSlider && eventsSlider.parentElement;
-    if (!wrapper) return;
-
-    const makeBtn = (dir, label, symbol) => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = `slider-btn ${dir}`;
-      btn.textContent = symbol;
-      btn.dataset.i18nAria = label;
-      btn.setAttribute("aria-label", typeof t === "function" ? t(label) : label);
-      btn.addEventListener("click", () => {
-        const card = eventsSlider.querySelector(".item");
-        const stepPx = card ? card.offsetWidth + 15 : 300;
-        let target = eventsSlider.scrollLeft + (dir === "left" ? -stepPx : stepPx);
-        if (target < 0) target += loopWidth();
-        if (target >= loopWidth()) target -= loopWidth();
-        scrollPos = target;
-        eventsSlider.scrollLeft = target;
-      });
-      wrapper.appendChild(btn);
+  shareForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const user = Auth.currentUser();
+    if (!user) return;
+    const val = (id) => $(id).value.trim();
+    const item = {
+      id: "u" + Date.now(),
+      cat: val("#share-category"),
+      condition: val("#share-condition"),
+      district: val("#share-district"),
+      posted: todayISO(),
+      img: safeUrl(val("#share-image")),
+      name: val("#share-name"),
+      desc: val("#share-desc"),
+      pickup: val("#share-pickup"),
+      donor: user.name,
+      ownerEmail: user.email,
     };
-    makeBtn("left", "prev", "◀");
-    makeBtn("right", "next", "▶");
-  }
+    save(USER_ITEMS, [item, ...userItems()]);
+    shareForm.reset();
+    $("#share-food-note").hidden = true;
+    shareDialog.close();
+    Object.assign(state, { q: "", cat: "all", district: "", sort: "newest" });
+    filterQ.value = "";
+    $("#filter-district").value = "";
+    $("#filter-sort").value = "newest";
+    refreshAll();
+    toast(t("share_success"));
+    $("#items").scrollIntoView({ behavior: "smooth" });
+  });
 
-  // ====== Hot Items + Modal ======
-  const newList = document.getElementById("new-items-list");
-  const modal = document.getElementById("item-modal");
-  const modalImg = document.getElementById("modal-img");
-  const modalClose = document.getElementById("modal-close");
-  const modalFields = ["name", "area", "description", "donor", "pickup"];
-  let openItem = null;
-  let lastFocused = null;
-
-  const itemsData = [
-    { key: "item1", emoji: "🍽️", img: "https://images.unsplash.com/photo-1677591276151-e11ed2e307c6?" },
-    { key: "item2", emoji: "📚", img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?" },
-    { key: "item3", emoji: "🧥", img: "https://images.unsplash.com/photo-1711527124424-463764d8d8e5?" },
-    { key: "item4", emoji: "🍎", img: "https://images.unsplash.com/photo-1719274868535-9f4af7296306?" },
-  ];
-
-  function fillModal(item, l) {
-    const dict = dictFor(l);
-    const values = {
-      name: dict[`${item.key}_name`],
-      area: "📍 " + (dict[`${item.key}_area`] || ""),
-      description: dict[`${item.key}_desc`],
-      donor: dict[`${item.key}_donor`],
-      pickup: dict[`${item.key}_pickup`],
-    };
-    modalFields.forEach((f) => {
-      document.getElementById(`modal-${f}`).textContent = values[f] || "";
+  // Close buttons + click on backdrop for both dialogs
+  document.querySelectorAll("dialog").forEach((dlg) => {
+    dlg.querySelectorAll(".dialog-close, .dialog-cancel").forEach((b) => b.addEventListener("click", () => dlg.close()));
+    dlg.addEventListener("click", (e) => {
+      if (e.target === dlg) dlg.close();
     });
-    modalImg.alt = values.name || "";
+  });
+  itemDialog.addEventListener("close", () => (openId = null));
+
+  // ====== Events ======
+  function upcomingEvents() {
+    const today = todayISO();
+    return EVENTS.filter((ev) => ev.date >= today).sort((a, b) => a.date.localeCompare(b.date));
   }
 
-  function openModal(item) {
-    lastFocused = document.activeElement;
-    openItem = item;
-    modalImg.hidden = false;
-    modalImg.onerror = () => (modalImg.hidden = true);
-    modalImg.src = sized(item.img, 900);
-    fillModal(item, lang());
-    modal.hidden = false;
-    document.body.classList.add("modal-open");
-    modalClose.focus();
+  function renderEvents() {
+    const l = lang();
+    const locale = l === "zh" ? "zh-TW" : "en-GB";
+    const events = upcomingEvents();
+    $("#no-events").hidden = events.length > 0;
+    $("#events-grid").innerHTML = events
+      .map((ev) => {
+        const d = new Date(ev.date + "T00:00:00");
+        const month = d.toLocaleDateString(locale, { month: "short" });
+        const weekday = d.toLocaleDateString(locale, { weekday: "long" });
+        return `<li class="event-card">
+          <div class="event-media">
+            <img src="${esc(ev.img)}" alt="" loading="lazy"
+                 data-fallback="${esc('<div class="media-tile event-img" style="--tile:#fde3cf"><span aria-hidden="true">📅</span></div>')}" class="event-img" />
+            <span class="badge badge-free">${esc(t("event_free"))}</span>
+          </div>
+          <div class="event-body">
+            <div class="event-date" aria-hidden="true"><span>${esc(month)}</span><strong>${d.getDate()}</strong></div>
+            <div>
+              <h3>${esc(loc(ev.title))}</h3>
+              <p class="event-desc">${esc(loc(ev.desc))}</p>
+              <p class="item-meta">${icon("i-clock", "icon icon-sm")}<span><time datetime="${ev.date}">${esc(weekday)}</time> · ${esc(ev.time)}</span></p>
+              <p class="item-meta">${icon("i-pin", "icon icon-sm")}<span>${esc(loc(ev.place))}, ${esc(t("district_" + ev.district))}</span></p>
+            </div>
+          </div>
+        </li>`;
+      })
+      .join("");
   }
 
-  function closeModal() {
-    modal.hidden = true;
-    openItem = null;
-    document.body.classList.remove("modal-open");
-    if (lastFocused) lastFocused.focus();
+  // ====== Top sharers ======
+  function renderDonors() {
+    const max = Math.max(...TOP_SHARERS.map((d) => d.count));
+    $("#donor-list").innerHTML = TOP_SHARERS.map((d, i) => `
+      <li>
+        <span class="rank rank-${i + 1}">${i + 1}</span>
+        <div class="donor-info">
+          <div class="donor-row">
+            <strong>${esc(loc(d.name))}</strong>
+            <span>${esc(t("donations", { n: d.count }))}</span>
+          </div>
+          <div class="donor-sub">${esc(t("district_" + d.district))}</div>
+          <div class="bar"><span style="width:${Math.round((d.count / max) * 100)}%"></span></div>
+        </div>
+      </li>`).join("");
   }
 
-  function buildItems() {
-    if (!newList) return;
-    newList.innerHTML = "";
-
-    itemsData.forEach((item) => {
-      const li = document.createElement("li");
-      li.dataset.itemKey = item.key;
-
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "item-card";
-      const img = withFallback(Object.assign(document.createElement("img"), {
-        src: sized(item.img, 400), alt: "", loading: "lazy",
-      }), item.emoji);
-      btn.append(img);
-      btn.insertAdjacentHTML("beforeend",
-        `<strong data-i18n-item-name></strong><span data-i18n-item-area></span>`);
-      btn.addEventListener("click", () => openModal(item));
-
-      li.appendChild(btn);
-      newList.appendChild(li);
-    });
-  }
-
-  function updateItemsLang(l) {
-    if (!newList) return;
-    const dict = dictFor(l);
-    newList.querySelectorAll("li").forEach((li) => {
-      const key = li.dataset.itemKey;
-      li.querySelector("[data-i18n-item-name]").textContent = dict[`${key}_name`] || "";
-      li.querySelector("[data-i18n-item-area]").textContent = "📍 " + (dict[`${key}_area`] || "");
-    });
-    if (openItem) fillModal(openItem, l);
-  }
-
-  if (modal && modalClose) {
-    modalClose.addEventListener("click", closeModal);
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) closeModal();
-    });
-    document.addEventListener("keydown", (e) => {
-      if (modal.hidden) return;
-      if (e.key === "Escape") closeModal();
-      // Keep keyboard focus inside the dialog
-      if (e.key === "Tab") {
-        e.preventDefault();
-        modalClose.focus();
-      }
-    });
+  // ====== Stats ======
+  function renderStats() {
+    $("#stat-items").textContent = allItems().length;
+    $("#stat-events").textContent = upcomingEvents().length;
+    $("#stat-categories").textContent = CATEGORIES.length;
   }
 
   // ====== Init + language sync ======
-  buildEvents();
-  buildItems();
-  addEventSliderButtons();
-  startAutoScroll();
+  function refreshAll() {
+    renderSelects();
+    renderChips();
+    renderItems();
+    renderEvents();
+    renderDonors();
+    renderStats();
+    if (openId && itemDialog.open) fillItemDialog();
+  }
 
-  updateEventsLang(lang());
-  updateItemsLang(lang());
-
-  document.addEventListener("languageChange", (e) => {
-    const l = (e.detail && e.detail.lang) || "en";
-    updateEventsLang(l);
-    updateItemsLang(l);
-  });
+  refreshAll();
+  document.addEventListener("languageChange", refreshAll);
 });
